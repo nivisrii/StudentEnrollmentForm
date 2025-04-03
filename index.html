@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const rollNoInput = document.getElementById("rollNo");
+            const fullNameInput = document.getElementById("fullName");
+            const classInput = document.getElementById("class");
+            const birthDateInput = document.getElementById("birthDate");
+            const addressInput = document.getElementById("address");
+            const enrollmentDateInput = document.getElementById("enrollmentDate");
+            const saveBtn = document.getElementById("saveBtn");
+            const updateBtn = document.getElementById("updateBtn");
+            const resetBtn = document.getElementById("resetBtn");
+
+            function resetForm() {
+                fullNameInput.value = "";
+                classInput.value = "";
+                birthDateInput.value = "";
+                addressInput.value = "";
+                enrollmentDateInput.value = "";
+                saveBtn.disabled = true;
+                updateBtn.disabled = true;
+            }
+
+            rollNoInput.addEventListener("blur", async function () {
+                const rollNo = rollNoInput.value.trim();
+                if (!rollNo) return;
+
+                const response = await fetch(`/student/${rollNo}`);
+                const student = await response.json();
+
+                if (student) {
+                    fullNameInput.value = student.fullName;
+                    classInput.value = student.className;
+                    birthDateInput.value = student.birthDate;
+                    addressInput.value = student.address;
+                    enrollmentDateInput.value = student.enrollmentDate;
+                    saveBtn.disabled = true;
+                    updateBtn.disabled = false;
+                } else {
+                    resetForm();
+                    saveBtn.disabled = false;
+                }
+            });
+
+            saveBtn.addEventListener("click", async function () {
+                const student = {
+                    rollNo: rollNoInput.value.trim(),
+                    fullName: fullNameInput.value.trim(),
+                    className: classInput.value.trim(),
+                    birthDate: birthDateInput.value.trim(),
+                    address: addressInput.value.trim(),
+                    enrollmentDate: enrollmentDateInput.value.trim()
+                };
+
+                if (Object.values(student).some((v) => v === "")) {
+                    alert("All fields are required!");
+                    return;
+                }
+
+                const response = await fetch("/student", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(student)
+                });
+
+                if (response.ok) {
+                    alert("Student saved successfully!");
+                    resetForm();
+                } else {
+                    alert("Error: " + (await response.json()).message);
+                }
+            });
+
+            updateBtn.addEventListener("click", async function () {
+                const rollNo = rollNoInput.value.trim();
+                const student = {
+                    fullName: fullNameInput.value.trim(),
+                    className: classInput.value.trim(),
+                    birthDate: birthDateInput.value.trim(),
+                    address: addressInput.value.trim(),
+                    enrollmentDate: enrollmentDateInput.value.trim()
+                };
+
+                if (Object.values(student).some((v) => v === "")) {
+                    alert("All fields are required!");
+                    return;
+                }
+
+                const response = await fetch(`/student/${rollNo}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(student)
+                });
+
+                if (response.ok) {
+                    alert("Student updated successfully!");
+                    resetForm();
+                } else {
+                    alert("Error: " + (await response.json()).message);
+                }
+            });
+
+            resetBtn.addEventListener("click", resetForm);
+        });
+    </script>
+</head>
+<body>
+    <h2>Student Enrollment Form</h2>
+    <form>
+        <label>Roll No:</label>
+        <input type="text" id="rollNo" required /><br>
+
+        <label>Full Name:</label>
+        <input type="text" id="fullName" required /><br>
+
+        <label>Class:</label>
+        <input type="text" id="class" required /><br>
+
+        <label>Birth Date:</label>
+        <input type="date" id="birthDate" required /><br>
+
+        <label>Address:</label>
+        <input type="text" id="address" required /><br>
+
+        <label>Enrollment Date:</label>
+        <input type="date" id="enrollmentDate" required /><br>
+
+        <button type="button" id="saveBtn" disabled>Save</button>
+        <button type="button" id="updateBtn" disabled>Update</button>
+        <button type="button" id="resetBtn">Reset</button>
+    </form>
+</body>
+</html>
